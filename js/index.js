@@ -38,8 +38,8 @@ function gameModule(calling){//main game module
         //adjust buttons to pointer
         for(var i=0;i<4;i++){$("#button"+i).css({"cursor": "pointer"});}
         //console.log("GO")
-        
-        var responseIntervalCounter =0;//counter used to time player 
+
+        var responseIntervalCounter =0;//counter used to time player
         var responseInterval = 1000;
         var capturePlayerPush=playerHits.length;//used to track user pushes on the buttons
         //Timer countdown for user to submit answer, see playerCallback()
@@ -48,7 +48,7 @@ function gameModule(calling){//main game module
     		//if a correct button has been pressed renew time out
     	    if(capturePlayerPush!==playerHits.length){responseIntervalCounter=0;}
     	    capturePlayerPush=playerHits.length;
-    	    responseIntervalCounter+=responseInterval;//otherwise increment 
+    	    responseIntervalCounter+=responseInterval;//otherwise increment
     	    if (responseIntervalCounter===5000){//if 5secs is up then clear and redisplay sequence
     	      responseIntervalCounter=0;
     	      clearInterval(playerResponseID);
@@ -62,7 +62,7 @@ function gameModule(calling){//main game module
       addMemory();
       computerMove();
       break;
-  } 
+  }
 }
 function clearBoard(){//for a restart clears everything
   inMemory=[];
@@ -71,7 +71,7 @@ function clearBoard(){//for a restart clears everything
   clearInterval(computerTimerID);
   clearTimeout(computerFlashID);
   clearInterval(playerResponseID);
-  
+
   playerTurn=false;
   playerPressCounter=0;
   playerHits=[];
@@ -131,14 +131,14 @@ function computerMove(){//computer's turn to display what is in the buffer
       soundObject[inMemory[memoryIndex]].play();//play sound
       //set a timer for the duration of each flash, note timer must be less than the interval timer
       computerFlashID = setTimeout(computerTimerCallback,(flashInterval/2));
-      //when duration of flash is up.. 
+      //when duration of flash is up..
       function computerTimerCallback(){
         inactiveButton(inMemory[memoryIndex]);//turn lights off
         memoryIndex++; // up bufffer index
         clearTimeout(computerFlashID);
       }
     }
-    
+
   }
 }
 function addMemory(){
@@ -182,7 +182,7 @@ function memoryFail(){
   });
 }
 function levelText(level){
-  //updates display screen 
+  //updates display screen
   var respFontsize = (mainSquareLength*0.06).toString()+"px";
   var levelTxt=SVG('text');
   $(levelTxt).attr("id","levelText")
@@ -192,11 +192,12 @@ function levelText(level){
                    .attr("fill","red")
                    .attr("font-size",respFontsize)
                    .attr("text-anchor","middle")
-  if(level===1){$("#parent").append(levelTxt);}//for new game must append to svg
+
+  if(level===1||level==="-->"){$("#parent").append(levelTxt);}//for new game must append to svg
   $("#levelText").empty();
   if(level<10){$("#levelText").append("0"+level);}//format digitis and append
   else{$("#levelText").append(level);}
-  
+
 }
 
 function activeButton(button){//lights a button
@@ -231,24 +232,30 @@ function inactiveButton(button){//turns lights off a button
       $("#" + button).css({"fill": "#00A74A"});
       break;
   }
-  
+
 }
 function playerPressDown(button){//on a press down of any of the main buttons
   if(!playerTurn){return;}//only works if it is the player's turn
   else{
     activeButton(button);
+  }
+}
+function playerPressUp(button){//on a press up of any of the main buttons
+  //note : used to have player results tallied after button down but then swiitched to
+  //button up as it seems to work slightly better this way
+  if(!playerTurn){return;}//only works if it is the player's turn
+  else{
+    inactiveButton(button);//turn light off
     soundObject[button].play();
     playerPressCounter++;//same index used to match with computer buffer
     playerHits.push(button);//will be updated so long as hits are succesful (look above)
     playerMove();//process pushed button
   }
 }
-function playerPressUp(button){
-  inactiveButton(button);//turn light off
-}
 function mainToggle(){//entire game switch toggle
   if(mainSwitch===false){
     mainSwitch=true;
+    levelText("-->")
     $("#switchOff").css({"visibility": "hidden"});
     $("#switchOn").css({"visibility": "visible"});
   }
@@ -390,9 +397,9 @@ function drawControlPanel(){
                    .attr("font-family","arial")
                    .attr("font-size",respFontsize)
                    .attr("class","panelText");
-  controlTextGroup.append("COUNT         START      STRICT");
-  offText.append("OFF");
-  onText.append("ON");
+  $(controlTextGroup).append("COUNT         START      STRICT");
+  $(offText).append("OFF");
+  $(onText).append("ON");
   $("#parent").append(screen);
   $("#parent").append(startButton);
   $("#parent").append(strictButton);
@@ -429,7 +436,7 @@ function drawBoard(){
                 .attr("cy",baseRadius.toString())
                 .attr("r",(baseRadius/2).toString())
                 .attr("fill","white");
-  
+
   var constructionlines = SVG('path')
   var constLine = "M " + baseRadius + " 0 " + "L " + baseRadius + " " + mainSquareLength;
   constLine+=" M "+" 0 "+ baseRadius + "L " + mainSquareLength + " " + baseRadius;
@@ -448,19 +455,19 @@ function drawBoard(){
   var arcRotation = 0;
   var arcLargeSweep = 0;
   var arcSweep = 0;
-  
+
   var lineToX = arcEndX;
   var lineToY = baseRadius-outerArcRadius;
-  
+
   var outterArcEndX =  baseRadius-outerArcRadius;
   var outterArcEndY= arcStartY;
-  
+
   var pathString = "M " + arcStartX+" " + arcStartY+" " + "A " + innerArcRadius + " " + innerArcRadius + " ";
   pathString+="0 0 1 "+arcEndX+" " + arcEndY; //inner arc
   pathString+=" L " + lineToX + " " + lineToY; //first line
   pathString+=" A " + outerArcRadius + " " + outerArcRadius + " 0 0 0 " + outterArcEndX + " " + outterArcEndY;//outer arc
   pathString+=" L " + arcStartX + " " + arcStartY
-  
+
   var buttonFirst = SVG('path');
   $(buttonFirst).attr("id","button0")
               .attr("d",pathString)
@@ -476,7 +483,7 @@ function drawBoard(){
                  .attr("onmousedown","playerPressDown(\"button1\")")
                  .attr("onmouseup","playerPressUp(\"button1\")")
                  .attr("fill","#094A8F")
-                 .attr("cursor","default");       
+                 .attr("cursor","default");
   var buttonThird = SVG('path');
   $(buttonThird).attr("id","button2")
                 .attr("d",pathString)
@@ -491,7 +498,7 @@ function drawBoard(){
                  .attr("onmousedown","playerPressDown(\"button3\")")
                  .attr("onmouseup","playerPressUp(\"button3\")")
                  .attr("fill","#00A74A")
-                 .attr("cursor","default"); 
+                 .attr("cursor","default");
   var logo = SVG('text');
   var respFontsize = (mainSquareLength*0.1).toString()+"px";
   $(logo).attr("id","logo")
@@ -517,7 +524,7 @@ function drawBoard(){
   $("#parent").append(logo);
   $("#parent").append(tr);
   $('#svgBoardBase').append(group);
-  
+
   $("#tmark").append("&reg;")
   drawControlPanel()
 }
